@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="
+       http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+       http://camel.apache.org/schema/spring       http://camel.apache.org/schema/spring/camel-spring.xsd">
+
+    <camelContext xmlns="http://camel.apache.org/schema/spring">
+
+        <restConfiguration component="servlet" contextPath="/camel-rest-3scale" apiContextPath="/api-doc" apiContextRouteId="doc-api" enableCORS="true" scheme="http">
+            <apiProperty key="api.title" value="User Service" />
+            <apiProperty key="api.version" value="1.0" />
+            <apiProperty key="api.specification.contentType.json" value="application/vnd.oai.openapi+json;version=2.0" />
+            <apiProperty key="api.specification.contentType.yaml" value="application/vnd.oai.openapi;version=2.0" />
+            <apiProperty key="cors" value="true" />
+        </restConfiguration>
+        <!-- Override the default Camel Swagger doc with custom OpenAPI doc -->
+        <!--
+        <rest path="/" enableCORS="true">
+            <get id="openapi.json" produces="application/json" uri="openapi.json">
+                <description>Gets the openapi document for this service</description>
+                <route>
+                    <setHeader headerName="Exchange.CONTENT_TYPE">
+                        <constant>application/vnd.oai.openapi+json</constant>
+                    </setHeader>
+                    <setBody>
+                        <simple>resource:classpath:openapi.json</simple>
+                    </setBody>
+                </route>
+            </get>
+        </rest>
+        -->
+
+        <!-- User service -->
+        <rest path="/users" bindingMode="json" enableCORS="true">
+            <description>Users Service</description>
+            <post id="greet" consumes="application/json" produces="application/text" uri="greet" type="org.example.fuse.User" outType="java.lang.String">
+                <description>Greet this Service with User credentials</description>
+                <responseMessage message="User added" code="200" />
+                <to uri="bean:userService?method=greetUser" />
+            </post>
+            <get id="list" produces="application/json" uri="list" outType="org.example.fuse.User[]">
+                <description>List users that used this service</description>
+                <responseMessage message="All users successfully returned" code="200" />
+                <to uri="bean:userService?method=findUsers" />
+            </get>
+        </rest>
+
+        <!-- Process Manager service -->
+        <rest path="/consumer-searchapi-web" enableCORS="true">
+            <description>Consumer Search API Service</description>
+            <get id="subscribersearch" produces="application/json" uri="subscribersearch">
+                <description>Returns the external eliigbility</description>
+                <responseMessage message="All users successfully returned" code="200" />
+                <to uri="direct:subscribersearch" />
+            </get>
+        </rest>
+
+        <route id="subscribersearch-route">
+            <from uri="direct:subscribersearch" />
+            <removeHeaders pattern="*" excludePattern="Authorization|first|last" />
+            <log message="TOKEN: [${header.Authorization.substring(7)}]" />
+            <log message="FIRST: [${header.first}]" />
+            <log message="LAST: [${header.last}]" />
+            <toD uri="https://api-staging.vspglobal.com/consumer-searchapi-web/subscribersearch?bridgeEndpoint=true&amp;first=${header.first}&amp;last=${header.last}" />
+            <convertBodyTo type="java.lang.String" charset="ISO-8859-1" />
+            <log message="BODY: [${body}]" />
+            <setHeader headerName="secureMemberPolicyLink">
+                <jsonpath resultType="java.lang.String">$.subscribers.[*].secureMemberPolicyLink.href</jsonpath>
+            </setHeader>
+            <log message="link: [${header.secureMemberPolicyLink}]" />
+            <to uri="direct:memberpolicysearch" />
+        </route>
+
+
+        <route id="memberpolicysearch-route">
+            <from uri="direct:memberpolicysearch" />
+            <removeHeaders pattern="*" excludePattern="Authorization|secureMemberPolicyLink" />
+            <setBody>
+                <constant>null</constant>
+            </setBody>
+            <log message="MEMBER POLICY SEARCH TOKEN: [${header.Authorization.substring(7)}]" />
+            <log message="secureMemberPolicyLink: [${header.secureMemberPolicyLink}]" />
+            <toD uri="${header.secureMemberPolicyLink}" />
+            <convertBodyTo type="java.lang.String" charset="ISO-8859-1" />
+            <log message="memberpolicysearch BODY: [${body}]" />
+            <setHeader headerName="externalEligibilityLink">
+                <jsonpath resultType="java.lang.String">$.memberships.[0].externalEligibility.href</jsonpath>
+            </setHeader>
+            <log message="link: [${header.externalEligibilityLink}]" />
+            <to uri="direct:externaleligibility" />
+        </route>
+
+        <route id="externaleligibility-route" streamCache="true">
+            <from uri="direct:externaleligibility" />
+            <removeHeaders pattern="*" excludePattern="Authorization|externalEligibilityLink" />
+            <setBody>
+                <constant>null</constant>
+            </setBody>
+            <log message="externaleligibility SEARCH TOKEN: [${header.Authorization.substring(7)}]" />
+            <log message="externaleligibility: [${header.externalEligibilityLink}]" />
+            <toD uri="${header.externalEligibilityLink}" />
+            <!--convertBodyTo type="java.lang.String" charset="ISO-8859-1" /-->
+            <log message="externaleligibility BODY: [${body}]" />
+            <log message="final response: [${body}]" />
+            <removeHeaders pattern="*"/>
+        </route>
+    </camelContext>
+
+</beans>
