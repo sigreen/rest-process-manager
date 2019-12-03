@@ -88,5 +88,5 @@ A successful response will output the following
    "packages":    [
             {
          "name": "Signature",
-         ...
 ```
+...
