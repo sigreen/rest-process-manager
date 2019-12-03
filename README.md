@@ -79,6 +79,7 @@ curl -X GET \
   -H 'Accept: */*' \
   -H 'Accept-Encoding: gzip, deflate' \
   -H 'Authorization: Bearer <insert auth token from above>'```
+```
 
 A successful response will output the following
 
