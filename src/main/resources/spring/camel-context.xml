@@ -5,9 +5,24 @@
 
     <camelContext xmlns="http://camel.apache.org/schema/spring">
 
+        <onException useOriginalMessage="true">
+            <exception>java.lang.Exception</exception>
+            <handled>
+                <constant>true</constant>
+            </handled>
+            <log message="Process Manager server connectivity error.  Error is ${exception.message}."/>
+            <setHeader headerName="Exchange.CONTENT_TYPE" id="_setHeader2">
+                <constant>text/plain</constant>
+            </setHeader>
+            <setBody>
+                <simple>${exception.message}</simple>                
+            </setBody>
+        </onException>
+
         <restConfiguration component="servlet" contextPath="/camel-rest-3scale" apiContextPath="/api-doc" apiContextRouteId="doc-api" enableCORS="true" scheme="http">
-            <apiProperty key="api.title" value="User Service" />
+            <apiProperty key="api.title" value="Process Manager Service" />
             <apiProperty key="api.version" value="1.0" />
+            <apiProperty key="host" value=""/>
             <apiProperty key="api.specification.contentType.json" value="application/vnd.oai.openapi+json;version=2.0" />
             <apiProperty key="api.specification.contentType.yaml" value="application/vnd.oai.openapi;version=2.0" />
             <apiProperty key="cors" value="true" />
@@ -29,26 +44,20 @@
         </rest>
         -->
 
-        <!-- User service -->
-        <rest path="/users" bindingMode="json" enableCORS="true">
-            <description>Users Service</description>
-            <post id="greet" consumes="application/json" produces="application/text" uri="greet" type="org.example.fuse.User" outType="java.lang.String">
-                <description>Greet this Service with User credentials</description>
-                <responseMessage message="User added" code="200" />
-                <to uri="bean:userService?method=greetUser" />
-            </post>
-            <get id="list" produces="application/json" uri="list" outType="org.example.fuse.User[]">
-                <description>List users that used this service</description>
-                <responseMessage message="All users successfully returned" code="200" />
-                <to uri="bean:userService?method=findUsers" />
-            </get>
-        </rest>
-
         <!-- Process Manager service -->
         <rest path="/consumer-searchapi-web" enableCORS="true">
             <description>Consumer Search API Service</description>
             <get id="subscribersearch" produces="application/json" uri="subscribersearch">
                 <description>Returns the external eliigbility</description>
+                <param dataType="string"
+                description="First Name"
+                name="first" type="query"/>
+                <param dataType="string"
+                description="Last Name"
+                name="last" type="query"/>
+                <param dataType="string"
+                description="Auth Token for Bearer"
+                name="Authorization" defaultValue="Bearer &lt;insert auth_token&gt;" type="header"/>
                 <responseMessage message="All users successfully returned" code="200" />
                 <to uri="direct:subscribersearch" />
             </get>
@@ -85,7 +94,7 @@
             <setHeader headerName="externalEligibilityLink">
                 <jsonpath resultType="java.lang.String">$.memberships.[0].externalEligibility.href</jsonpath>
             </setHeader>
-            <log message="link: [${header.externalEligibilityLink}]" />
+            <log message="externalEligibilityLink: [${header.externalEligibilityLink}]" />
             <to uri="direct:externaleligibility" />
         </route>
 
@@ -96,9 +105,8 @@
                 <constant>null</constant>
             </setBody>
             <log message="externaleligibility SEARCH TOKEN: [${header.Authorization.substring(7)}]" />
-            <log message="externaleligibility: [${header.externalEligibilityLink}]" />
+            <log message="externalEligibilityLink: [${header.externalEligibilityLink}]" />
             <toD uri="${header.externalEligibilityLink}" />
-            <!--convertBodyTo type="java.lang.String" charset="ISO-8859-1" /-->
             <log message="externaleligibility BODY: [${body}]" />
             <log message="final response: [${body}]" />
             <removeHeaders pattern="*"/>

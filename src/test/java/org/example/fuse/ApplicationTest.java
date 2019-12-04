@@ -15,20 +15,20 @@
  */
 package org.example.fuse;
 
-import java.util.List;
-
 import org.junit.Test;
-import org.junit.Ignore;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
 import org.springframework.boot.test.web.client.TestRestTemplate;
-import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -40,21 +40,21 @@ public class ApplicationTest {
     private TestRestTemplate restTemplate;
 
     @Test
-    @Ignore
-    public void newOrderTest() {
-        // Register a new User
-        final User testUser = new User("appId", "appKey", "Test");
-        ResponseEntity<String> userResponse = restTemplate.postForEntity("/camel-rest-3scale/users/greet", testUser, String.class);
-        assertThat(userResponse.getStatusCode()).isEqualTo(HttpStatus.OK);
-        String greeting = userResponse.getBody();
-        assertThat(greeting).isEqualTo("\"Hello Test\"");
+    // @Ignore
+    public void newProcessManagerTest() {
+        // Request External Eligibility
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.add("Authorization",
+                "Bearer 4EiFw6sc9rvo33sfj9r0eSrWJCVl4RHXrB5RfqWOH0lZi-OAJwPtcmxBAQyl1qa8m_tvst8WDX3gMg5rlIQugc1hxK2FwajP1sBIj2uXdvLYJGC4KoObKmhJHqE37Tw_lJW9iQtUHLJG5j-LuCVzuOrnSZoWlI2OMdFSOIRV2Y3CPaaBHw4IDGM6eL99CH0jDGtMY1aAapKoYCsX7QYSbA6JZQw");
+        UriComponentsBuilder builder = UriComponentsBuilder
+                .fromUriString("/camel-rest-3scale/consumer-searchapi-web/subscribersearch").queryParam("first", "eddy")
+                .queryParam("last", "reagan");
 
-        // List Users
-        ResponseEntity<List<User>> usersResponse = restTemplate.exchange("/camel-rest-3scale/users/list",
-            HttpMethod.GET, null, new ParameterizedTypeReference<List<User>>(){});
+        HttpEntity<?> entity = new HttpEntity<>(headers);
+
+        ResponseEntity<String> usersResponse = restTemplate.exchange(builder.toUriString(), HttpMethod.GET, entity,
+                String.class);
         assertThat(usersResponse.getStatusCode()).isEqualTo(HttpStatus.OK);
-        List<User> users = usersResponse.getBody();
-        assertThat(users).hasSize(1);
-        assertThat(users.get(0).getName()).isEqualTo("Test");
     }
 }
