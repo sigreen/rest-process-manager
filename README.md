@@ -67,7 +67,13 @@ For the client test portion, be sure to setup an Application Plan, Publish then 
 
 A [Swagger User Interface](http://swagger.io/swagger-ui/) is available within the rest-process-manager application to view and invoke the available services.  Click the above route location (link), and append `/swagger-ui.html` when the page opens.  This should display the below Swagger interface:
 
-The raw swagger definition can also be found at the context path `/camel-rest-3scale/api-doc`.
+The raw swagger definition can also be found at the context path `/camel-rest-3scale/api-doc`.  The swagger UI request window is illustrated by the following:
+
+![](images/swagger-request.png "Swagger Request")
+
+Finally, the response screen is below:
+
+![](images/swagger-response.png "Swagger Response")
 
 ## Command Line Testing
 
