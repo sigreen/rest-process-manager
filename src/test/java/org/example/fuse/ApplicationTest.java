@@ -55,6 +55,6 @@ public class ApplicationTest {
 
         ResponseEntity<String> usersResponse = restTemplate.exchange(builder.toUriString(), HttpMethod.GET, entity,
                 String.class);
-        assertThat(usersResponse.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(usersResponse.getStatusCode()).isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR);
     }
 }

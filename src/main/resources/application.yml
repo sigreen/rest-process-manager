@@ -23,4 +23,4 @@ springfox:
   documentation:
     swagger:
       v2:
-        path: /camel-rest-3scale/api-doc
+        path: /camel-rest-3scale/openapi.json

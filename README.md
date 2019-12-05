@@ -84,7 +84,7 @@ curl -X GET \
   'https://rest-process-manager-3scale-apicast-staging.apps.open.redhat.com:443/camel-rest-3scale/consumer-searchapi-web/subscribersearch?first=eddy&last=reagan&user_key=<enter 3scale userkey>' \
   -H 'Accept: */*' \
   -H 'Accept-Encoding: gzip, deflate' \
-  -H 'Authorization: Bearer <insert auth token from above>'```
+  -H 'Authorization: Bearer <insert auth token from above>'
 ```
 
 A successful response will output the following
