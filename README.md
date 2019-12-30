@@ -9,7 +9,7 @@ This project demonstrates a RESTful Process Manager which gathers responses from
 
 - VSCode 1.4+
 - OpenShift 3.11+
-- Fuse 7.5 Image Streams (template found [here](https://raw.githubusercontent.com/jboss-fuse/application-templates/master/fis-image-streams.json))
+- Fuse 7.5 Image Streams (template should be found [here](https://raw.githubusercontent.com/jboss-fuse/application-templates/master/fis-image-streams.json))
 
 ## Deployment
 
